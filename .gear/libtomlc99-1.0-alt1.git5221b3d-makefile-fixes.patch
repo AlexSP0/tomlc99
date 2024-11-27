@@ -1,0 +1,47 @@
+diff --git a/Makefile b/Makefile
+index 599f7db..f7b8317 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,5 @@
+ prefix ?= /usr/local
++LIBDIR = /lib
+ HFILES = toml.h
+ CFILES = toml.c
+ OBJ = $(CFILES:.c=.o)
+@@ -9,6 +10,7 @@ CFLAGS = -std=c99 -Wall -Wextra -fpic
+ LIB_VERSION = 1.0
+ LIB = libtoml.a
+ LIB_SHARED = libtoml.so.$(LIB_VERSION)
++LDFLAGS = -shared -Wl,-soname,$(LIB_SHARED)
+ 
+ # to compile for debug: make DEBUG=1
+ # to compile for no debug: make
+@@ -27,19 +29,23 @@ libtoml.a: toml.o
+ 	ar -rcs $@ $^
+ 
+ libtoml.so.$(LIB_VERSION): toml.o
+-	$(CC) -shared -o $@ $^
++	$(CC) $(LDFLAGS) -shared -o $@ $^
+ 
+ $(EXEC): $(LIB)
+ 
+ install: all
+-	install -d ${prefix}/include ${prefix}/lib
+-	install toml.h ${prefix}/include
+-	install $(LIB) ${prefix}/lib
+-	install $(LIB_SHARED) ${prefix}/lib
++	install -d ${DESTDIR}${prefix}/include ${DESTDIR}${prefix}/${LIBDIR} ${DESTDIR}${prefix}/${LIBDIR}/pkgconfig
++	install toml.h ${DESTDIR}${prefix}/include
++	install $(LIB) ${DESTDIR}${prefix}/${LIBDIR}
++	install $(LIB_SHARED) ${DESTDIR}${prefix}/${LIBDIR}
++	sed -i 's!%%PREFIX%%!${prefix}!' $(PCFILE)
++	sed -i 's!%%LIBDIR%%!${LIBDIR}!' $(PCFILE)
+ ifeq "$(prefix)" "/usr/local"
+ ifneq ("$(wildcard $(PCFILE))","")
+ 	install $(PCFILE) /usr/local/lib/pkgconfig
+ endif
++else
++	install $(PCFILE) ${DESTDIR}${prefix}/${LIBDIR}/pkgconfig
+ endif
+ 
+ 

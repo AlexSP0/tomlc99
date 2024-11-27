@@ -1,0 +1,3 @@
+spec: .gear/tomlc99.spec
+tar: .
+copy?: .gear/*.patch
